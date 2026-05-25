@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: CI with Static Analysis
+    name: Full CI Pipeline
     runs-on: ubuntu-latest
 
     steps:
@@ -22,12 +22,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Step 3: Install project dependencies and plugin
+      # Step 3: Install project dependencies, plugin, and test tools
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-          pip install pytest pytest-cov flake8 pylint mypy
+          pip install pytest pytest-cov flake8 pylint mypy mkdocs
 
       # Step 4: Static analysis with flake8
       - name: Run flake8 static analysis
@@ -39,7 +39,13 @@ jobs:
         run: |
           pylint mkdocs_cdoc --errors-only
 
-      # Step 6: Run unit and integration tests
-      - name: Run pytest tests
+      # Step 6: Unit and integration tests with coverage
+      - name: Run pytest tests with coverage
         run: |
-          pytest tests/ -v
+          pytest tests/ -v --cov=mkdocs_cdoc --cov-report=term-missing
+
+      # Step 7: Build validation with MkDocs
+      - name: Build example documentation site
+        run: |
+          cd example
+          mkdocs build
